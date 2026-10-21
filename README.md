@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WhiteHill Lifecares — Admin
 
-## Getting Started
+Private admin panel for the WhiteHill Lifecares website (`../whitehill-lifecare`). The client signs in with email and password and manages the website's Sanity content: products, categories, and site settings. There is no signup.
 
-First, run the development server:
+The plan and decisions are in [`prompts/admin-panel.md`](prompts/admin-panel.md).
+
+## Setup
+
+1. `npm install`
+2. Copy `.env.example` to `.env.local` and fill it in:
+   - `NEXT_PUBLIC_SANITY_*`: the same project and dataset as the website.
+   - `SANITY_API_WRITE_TOKEN`: a Sanity **Editor** token (sanity.io/manage → API → Tokens). Use its own token, e.g. named `admin-panel`.
+   - `ADMIN_EMAIL`: the login email.
+   - `ADMIN_PASSWORD_HASH`: run `npm run hash-password -- "the-password"` and paste the output (a base64 bcrypt hash).
+   - `SESSION_SECRET`: at least 32 random characters, e.g. `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+   - `NEXT_PUBLIC_SITE_URL`: the public website URL, for "View on site" links.
+3. `npm run dev` → http://localhost:3001 (the website uses 3000).
+
+## Changing the login
+
+Set a new `ADMIN_EMAIL` and/or `ADMIN_PASSWORD_HASH` in Vercel and redeploy. Changing `SESSION_SECRET` signs everyone out.
+
+## How it works
+
+- **Auth:** `proxy.ts` redirects signed-out visitors to `/login`, but that check is optimistic only. The real check is `requireAdmin()` (`lib/auth/dal.ts`), called by every data loader and every Server Action. Sessions are an HS256 JWT in an httpOnly cookie that lasts 8 hours.
+- **Sanity:** all reads and writes go through the server-only client in `lib/sanity/client.ts`; the token never reaches the browser. Saving publishes straight to the live document and removes any Studio draft of it.
+- **Website updates:** the website's Sanity webhook → `/api/revalidate` fires on these mutations, as it does for Studio edits.
+- **Uploads:** JPEG, PNG and WebP images, and PDF leaflets, up to 4 MB each (Vercel's request limit is 4.5 MB).
+- **Schema:** fields, option lists and the claim-word check mirror `whitehill-lifecare/sanity/schemaTypes/` and `sanity/lib/claim-check.ts`. When the schema changes there, update `lib/constants.ts`, `lib/validation/`, `lib/sanity/queries.ts` and the form here.
+
+## Checks
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run typecheck
+npm run lint
+npm run build
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

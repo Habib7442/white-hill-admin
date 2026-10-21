@@ -1,26 +1,207 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
+/* Light only: shadcn's dark: classes apply under .dark, which is never set. */
+@custom-variant dark (&:is(.dark *));
+
+/* WhiteHill palette (DESIGN.md §2) plus the admin neutrals taken from the
+   reference board: dark frame, grey pill controls, success / danger / drag. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --navy-900: #172c6b;
+  --blue-700: #1e3a8a;
+  --blue-600: #1d4ed8;
+  --blue-300: #9cc3fb;
+  --blue-100: #dbe6f8;
+  --blue-50: #e8f0fe;
+  --blue-25: #f3f7fe;
+  --white: #ffffff;
+  --text: #13234a;
+  --text-muted: #4a5674;
+  --text-faint: #6b7590;
+
+  --frame: #0d0d10;
+  --frame-raised: #1f1f25;
+  --frame-active: #26262d;
+  --frame-line: #2a2a31;
+  --frame-text: #e9e9ee;
+  --frame-text-muted: #9a9aa6;
+
+  --muted-bg: #f2f3f5;
+  --muted-bg-hover: #e8e9ec;
+  --card-border: #eaebef;
+  --hairline: #eceef2;
+  --success: #138a36;
+  --success-bg: #e7f6ec;
+  --danger: #d92d20;
+  --danger-bg: #fdecea;
+  --warning: #9a5b00;
+  --warning-bg: #fff4e0;
+  --drag: #dcdcfb;
+  --scrollbar: #cdd1da;
+  --scrollbar-hover: #9ea5b4;
+
+  --dot-1: #a855f7;
+  --dot-2: #4f46e5;
+  --dot-3: #22c55e;
+  --dot-4: #ef4444;
+  --dot-5: #f59e0b;
+  --dot-6: #06b6d4;
+
+  /* shadcn theme mapped onto the palette */
+  --background: var(--white);
+  --foreground: var(--text);
+  --card: var(--white);
+  --card-foreground: var(--text);
+  --popover: var(--white);
+  --popover-foreground: var(--text);
+  --primary: var(--blue-600);
+  --primary-foreground: var(--white);
+  --secondary: var(--muted-bg);
+  --secondary-foreground: var(--text);
+  --muted: var(--muted-bg);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--blue-50);
+  --accent-foreground: var(--navy-900);
+  --destructive: var(--danger);
+  --border: var(--card-border);
+  --input: #dfe1e7;
+  --ring: var(--blue-600);
+  --radius: 0.75rem;
 }
 
 @theme inline {
+  --font-sans: var(--font-jakarta);
+  --font-heading: var(--font-jakarta);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-navy-900: var(--navy-900);
+  --color-blue-700: var(--blue-700);
+  --color-blue-600: var(--blue-600);
+  --color-blue-300: var(--blue-300);
+  --color-blue-100: var(--blue-100);
+  --color-blue-50: var(--blue-50);
+  --color-blue-25: var(--blue-25);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+
+  --color-frame: var(--frame);
+  --color-frame-raised: var(--frame-raised);
+  --color-frame-active: var(--frame-active);
+  --color-frame-line: var(--frame-line);
+  --color-frame-text: var(--frame-text);
+  --color-frame-text-muted: var(--frame-text-muted);
+
+  --color-muted-hover: var(--muted-bg-hover);
+  --color-card-border: var(--card-border);
+  --color-hairline: var(--hairline);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-drag: var(--drag);
+  --color-dot-1: var(--dot-1);
+  --color-dot-2: var(--dot-2);
+  --color-dot-3: var(--dot-3);
+  --color-dot-4: var(--dot-4);
+  --color-dot-5: var(--dot-5);
+  --color-dot-6: var(--dot-6);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-card: 0.875rem;
+  --radius-panel: 1.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-frame text-foreground antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--blue-600);
+    outline-offset: 2px;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom scrollbars: a slim rounded thumb on a transparent track. Chrome,
+   Edge and Safari use the ::-webkit-scrollbar rules; Firefox, which doesn't
+   support them, gets the standard properties. (Setting the standard ones in
+   Chrome would switch off the webkit styling.) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-color: var(--scrollbar);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-hover);
+}
+::-webkit-scrollbar-button {
+  display: none;
+}
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar) transparent;
+  }
+}
+
+/* Scrolls, but shows no scrollbar (the dark sidebar). */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
