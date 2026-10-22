@@ -7,7 +7,7 @@ import { newId } from "@/lib/sanity/ids"
 import { categorySchema } from "@/lib/validation/category"
 import { fieldErrors } from "@/lib/validation/product"
 
-import { isDocOfType, invalidate, requireAdmin, sanityErrorMessage } from "./guard"
+import { afterWrite, isDocOfType, requireAdmin, sanityErrorMessage } from "./guard"
 
 export async function saveCategory(
   id: string | null,
@@ -42,16 +42,14 @@ export async function saveCategory(
         ...fields,
         order: order !== "" ? Number(order) : (last ?? 0) + 10,
       })
-      invalidate(tags.categories)
-      return ok({ id: created._id, title })
+      return ok({ id: created._id, title }, await afterWrite("category", tags.categories))
     }
 
     const patch = sanity.patch(id).set(fields)
     if (order !== "") patch.set({ order: Number(order) })
     else patch.unset(["order"])
     await sanity.transaction().patch(patch).delete(`drafts.${id}`).commit()
-    invalidate(tags.categories)
-    return ok({ id, title })
+    return ok({ id, title }, await afterWrite("category", tags.categories))
   } catch (error) {
     return fail(sanityErrorMessage(error))
   }
@@ -77,8 +75,7 @@ export async function moveCategory(id: string, direction: "up" | "down"): Promis
 
   try {
     await tx.commit()
-    invalidate(tags.categories)
-    return ok(undefined)
+    return ok(undefined, await afterWrite("category", tags.categories))
   } catch (error) {
     return fail(sanityErrorMessage(error))
   }
@@ -98,8 +95,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
 
   try {
     await sanity.transaction().delete(id).delete(`drafts.${id}`).commit()
-    invalidate(tags.categories)
-    return ok(undefined)
+    return ok(undefined, await afterWrite("category", tags.categories))
   } catch (error) {
     return fail(sanityErrorMessage(error))
   }

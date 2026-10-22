@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 
+import { showWarning } from "@/components/admin/notify"
 import { pill } from "@/components/admin/styles"
 import {
   DropdownMenu,
@@ -51,6 +52,7 @@ export function ProductHeaderActions({
                   return
                 }
                 toast.success("Copy created. It stays hidden until you show it.")
+                showWarning(result)
                 router.push(`/products/${result.data.id}`)
               })
             }

@@ -5,16 +5,26 @@ import { refresh, updateTag } from "next/cache"
 import { requireAdmin } from "@/lib/auth/dal"
 import { sanity } from "@/lib/sanity/client"
 import { isPublishedId } from "@/lib/sanity/ids"
+import { refreshWebsite, type WebsiteContentType } from "@/lib/website"
 
 export { requireAdmin }
 
+export const websiteRefreshWarning =
+  "Saved. The website couldn't be refreshed right now; it will update within a minute via Sanity."
+
 /**
- * After a write: expire the cached Sanity reads it touched (lib/data.ts tags)
- * so the next read is fresh, and re-render the current page.
+ * After a write: expire the admin's cached Sanity reads it touched
+ * (lib/data.ts tags), re-render the current page, and tell the public
+ * website to refresh `websiteType`. Returns a warning when the website
+ * couldn't be reached (the save itself succeeded).
  */
-export function invalidate(...cacheTags: string[]) {
+export async function afterWrite(
+  websiteType: WebsiteContentType,
+  ...cacheTags: string[]
+): Promise<string | undefined> {
   for (const tag of cacheTags) updateTag(tag)
   refresh()
+  return (await refreshWebsite(websiteType)) ? undefined : websiteRefreshWarning
 }
 
 /** True when `id` is a published document of `type`. Stops crafted ids. */

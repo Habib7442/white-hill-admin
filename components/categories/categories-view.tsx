@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 
+import { showWarning } from "@/components/admin/notify"
 import { ConfirmDialog } from "@/components/admin/confirm-dialog"
 import { PageBody, PageHeader } from "@/components/admin/page-header"
 import { dotColours, iconButton, primaryOutline } from "@/components/admin/styles"
@@ -41,6 +42,7 @@ export function CategoriesView({
     startTransition(async () => {
       const result = await moveCategory(category._id, direction)
       if (!result.ok) toast.error(result.error)
+      showWarning(result)
     })
   }
 
@@ -161,6 +163,7 @@ export function CategoriesView({
                     return
                   }
                   toast.success(`${deleting.title ?? "Category"} deleted`)
+                  showWarning(result)
                   setDeleting(null)
                 })
         }

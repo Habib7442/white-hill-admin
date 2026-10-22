@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState, useTransition } from "react"
 import { toast } from "sonner"
 
+import { showWarning } from "@/components/admin/notify"
 import { pill, primarySolid } from "@/components/admin/styles"
 import { fieldId } from "@/components/form/field"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/products/form/tabs"
@@ -115,9 +116,11 @@ export function ProductForm({
       setSubmitted(false)
       if (productId === null) {
         toast.success(`${values.name} created`)
+        showWarning(result)
         router.replace(`/products/${result.data.id}`)
       } else {
-        toast.success("Changes saved. The website updates within a minute.")
+        toast.success("Changes saved. The website is updated.")
+        showWarning(result)
       }
     })
   }

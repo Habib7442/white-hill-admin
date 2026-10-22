@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react"
 import { toast } from "sonner"
 
+import { showWarning } from "@/components/admin/notify"
 import { PageHeader } from "@/components/admin/page-header"
 import { Pagination } from "@/components/admin/pagination"
 import { SearchInput } from "@/components/admin/search-input"
@@ -144,6 +145,7 @@ export function ProductsView({
       const result = await updateProductQuick(product._id, patch)
       if (result.ok) toast.success(`${product.name ?? "Product"} updated`)
       else toast.error(result.error)
+      showWarning(result)
     })
   }, [applyOptimistic])
 
@@ -153,6 +155,7 @@ export function ProductsView({
       startTransition(async () => {
         const result = await moveProduct(product._id, direction)
         if (!result.ok) toast.error(result.error)
+        showWarning(result)
       }),
     onDuplicate: (product) =>
       startTransition(async () => {
@@ -161,6 +164,7 @@ export function ProductsView({
           toast.error(result.error)
           return
         }
+        showWarning(result)
         toast.success("Copy created. It stays hidden until you show it.", {
           action: { label: "Edit", onClick: () => router.push(`/products/${result.data.id}`) },
         })

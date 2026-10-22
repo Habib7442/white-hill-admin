@@ -4,6 +4,7 @@ import { LoaderCircle } from "lucide-react"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 
+import { showWarning } from "@/components/admin/notify"
 import { pill, primarySolid } from "@/components/admin/styles"
 import { describedBy, Field, inputClass } from "@/components/form/field"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -87,6 +88,7 @@ function CategoryForm({
         return
       }
       toast.success(category ? "Category updated" : `${result.data.title} added`)
+      showWarning(result)
       onSaved(result.data)
     })
   }

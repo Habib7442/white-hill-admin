@@ -7,9 +7,10 @@ import { slugify } from "@/lib/constants"
 import { tags } from "@/lib/data"
 import { sanity } from "@/lib/sanity/client"
 import { isPublishedId, newId, newKey } from "@/lib/sanity/ids"
+import { refreshWebsite } from "@/lib/website"
 import { fieldErrors, productSchema, type ProductValues } from "@/lib/validation/product"
 
-import { isDocOfType, invalidate, requireAdmin, sanityErrorMessage } from "./guard"
+import { afterWrite, isDocOfType, requireAdmin, sanityErrorMessage } from "./guard"
 
 type SanityFields = Record<string, unknown>
 
@@ -143,8 +144,7 @@ export async function saveProduct(
   try {
     if (id === null) {
       const created = await sanity.create({ _id: newId(), _type: "product", ...set })
-      invalidate(tags.products)
-      return ok({ id: created._id })
+      return ok({ id: created._id }, await afterWrite("product", tags.products))
     }
 
     // Saving here publishes this version. A Studio draft would otherwise
@@ -154,8 +154,7 @@ export async function saveProduct(
       .patch(id, (p) => p.set(set).unset(unset))
       .delete(`drafts.${id}`)
       .commit()
-    invalidate(tags.products)
-    return ok({ id })
+    return ok({ id }, await afterWrite("product", tags.products))
   } catch (error) {
     return fail(sanityErrorMessage(error))
   }
@@ -192,8 +191,7 @@ export async function updateProductQuick(id: string, patch: QuickPatch): Promise
 
   try {
     await sanity.patch(id).set(set).commit()
-    invalidate(tags.products)
-    return ok(undefined)
+    return ok(undefined, await afterWrite("product", tags.products))
   } catch (error) {
     return fail(sanityErrorMessage(error))
   }
@@ -220,8 +218,7 @@ export async function moveProduct(id: string, direction: "up" | "down"): Promise
 
   try {
     await tx.commit()
-    invalidate(tags.products)
-    return ok(undefined)
+    return ok(undefined, await afterWrite("product", tags.products))
   } catch (error) {
     return fail(sanityErrorMessage(error))
   }
@@ -253,8 +250,7 @@ export async function duplicateProduct(id: string): Promise<ActionResult<{ id: s
       // Hidden until edited, so the copy never shows twice on the site.
       visible: false,
     })
-    invalidate(tags.products)
-    return ok({ id: created._id })
+    return ok({ id: created._id }, await afterWrite("product", tags.products))
   } catch (error) {
     return fail(sanityErrorMessage(error))
   }
@@ -299,8 +295,8 @@ export async function deleteProduct(id: string, fromEditPage = false): Promise<A
   }
   if (fromEditPage) {
     updateTag(tags.products)
+    await refreshWebsite("product")
     redirect("/products")
   }
-  invalidate(tags.products)
-  return ok(undefined)
+  return ok(undefined, await afterWrite("product", tags.products))
 }

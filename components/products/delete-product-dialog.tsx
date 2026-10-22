@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react"
 import { toast } from "sonner"
 
+import { showWarning } from "@/components/admin/notify"
 import { ConfirmDialog } from "@/components/admin/confirm-dialog"
 import { deleteProduct, getProductReferrers } from "@/lib/actions/products"
 
@@ -52,6 +53,7 @@ export function DeleteProductDialog({
             return
           }
           toast.success(`${name} deleted`)
+          showWarning(result)
           onClose()
         })
       }

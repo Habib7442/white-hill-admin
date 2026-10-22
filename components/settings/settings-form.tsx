@@ -4,6 +4,7 @@ import { LoaderCircle, Save } from "lucide-react"
 import { useEffect, useMemo, useState, useTransition } from "react"
 import { toast } from "sonner"
 
+import { showWarning } from "@/components/admin/notify"
 import { primarySolid } from "@/components/admin/styles"
 import { describedBy, Field, fieldId, FormSection, inputClass, textareaClass } from "@/components/form/field"
 import { ImagePicker } from "@/components/form/upload"
@@ -61,7 +62,8 @@ export function SettingsForm({ initialValues }: { initialValues: SettingsFormVal
         return
       }
       setSaved(values)
-      toast.success("Site settings saved. The website updates within a minute.")
+      toast.success("Site settings saved. The website is updated.")
+      showWarning(result)
     })
   }
 
