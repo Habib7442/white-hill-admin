@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { BoardSkeleton } from "@/components/admin/skeletons"
+import { TableSkeleton } from "@/components/admin/skeletons"
 import { emptyFilters, type Filters } from "@/components/products/grouping"
 import { ProductsView } from "@/components/products/products-view"
 import { getCategories, getProducts } from "@/lib/data"
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Products" }
 
 export default function ProductsPage({ searchParams }: PageProps<"/products">) {
   return (
-    <Suspense fallback={<BoardSkeleton title="Products" />}>
+    <Suspense fallback={<TableSkeleton title="Products" />}>
       <Products searchParams={searchParams} />
     </Suspense>
   )

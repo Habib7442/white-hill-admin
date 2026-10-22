@@ -1,15 +1,15 @@
 "use server"
-
-import { refresh } from "next/cache"
+import { updateTag } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { fail, ok, type ActionResult } from "@/lib/action-result"
 import { slugify } from "@/lib/constants"
+import { tags } from "@/lib/data"
 import { sanity } from "@/lib/sanity/client"
 import { isPublishedId, newId, newKey } from "@/lib/sanity/ids"
 import { fieldErrors, productSchema, type ProductValues } from "@/lib/validation/product"
 
-import { isDocOfType, requireAdmin, sanityErrorMessage } from "./guard"
+import { isDocOfType, invalidate, requireAdmin, sanityErrorMessage } from "./guard"
 
 type SanityFields = Record<string, unknown>
 
@@ -143,7 +143,7 @@ export async function saveProduct(
   try {
     if (id === null) {
       const created = await sanity.create({ _id: newId(), _type: "product", ...set })
-      refresh()
+      invalidate(tags.products)
       return ok({ id: created._id })
     }
 
@@ -154,7 +154,7 @@ export async function saveProduct(
       .patch(id, (p) => p.set(set).unset(unset))
       .delete(`drafts.${id}`)
       .commit()
-    refresh()
+    invalidate(tags.products)
     return ok({ id })
   } catch (error) {
     return fail(sanityErrorMessage(error))
@@ -192,7 +192,7 @@ export async function updateProductQuick(id: string, patch: QuickPatch): Promise
 
   try {
     await sanity.patch(id).set(set).commit()
-    refresh()
+    invalidate(tags.products)
     return ok(undefined)
   } catch (error) {
     return fail(sanityErrorMessage(error))
@@ -220,7 +220,7 @@ export async function moveProduct(id: string, direction: "up" | "down"): Promise
 
   try {
     await tx.commit()
-    refresh()
+    invalidate(tags.products)
     return ok(undefined)
   } catch (error) {
     return fail(sanityErrorMessage(error))
@@ -253,7 +253,7 @@ export async function duplicateProduct(id: string): Promise<ActionResult<{ id: s
       // Hidden until edited, so the copy never shows twice on the site.
       visible: false,
     })
-    refresh()
+    invalidate(tags.products)
     return ok({ id: created._id })
   } catch (error) {
     return fail(sanityErrorMessage(error))
@@ -297,7 +297,10 @@ export async function deleteProduct(id: string, fromEditPage = false): Promise<A
   } catch (error) {
     return fail(sanityErrorMessage(error))
   }
-  if (fromEditPage) redirect("/products")
-  refresh()
+  if (fromEditPage) {
+    updateTag(tags.products)
+    redirect("/products")
+  }
+  invalidate(tags.products)
   return ok(undefined)
 }

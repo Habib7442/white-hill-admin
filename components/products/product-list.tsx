@@ -13,9 +13,14 @@ import { missingForSite, type ProductListItem } from "@/lib/types"
 import { ProductCard } from "./product-card"
 import { ProductMenu, type MoveTarget, type ProductActions } from "./product-menu"
 
-/** Dense list view: a table from 768 px, stacked cards below. */
+/**
+ * Dense list view: a table from 768 px, stacked cards below. Shows one page;
+ * `offset` and `total` place it in the full list for Move up / down.
+ */
 export function ProductList({
   products,
+  offset,
+  total,
   categoryTitles,
   moveTargetsFor,
   now,
@@ -24,6 +29,8 @@ export function ProductList({
   siteUrl,
 }: {
   products: ProductListItem[]
+  offset: number
+  total: number
   categoryTitles: Map<string, string>
   moveTargetsFor: (product: ProductListItem) => MoveTarget[]
   now: number
@@ -32,7 +39,7 @@ export function ProductList({
   siteUrl: string
 }) {
   return (
-    <div className="px-4 py-5 sm:px-7">
+    <div className="px-4 pt-5 pb-4 sm:px-7">
       <div className="grid gap-3 md:hidden">
         {products.map((product) => (
           <ProductCard
@@ -108,7 +115,7 @@ export function ProductList({
                         <button
                           type="button"
                           className={iconButton}
-                          disabled={index === 0}
+                          disabled={offset + index === 0}
                           onClick={() => actions.onMove(product, "up")}
                           aria-label={`Move ${name} up`}
                         >
@@ -117,7 +124,7 @@ export function ProductList({
                         <button
                           type="button"
                           className={iconButton}
-                          disabled={index === products.length - 1}
+                          disabled={offset + index === total - 1}
                           onClick={() => actions.onMove(product, "down")}
                           aria-label={`Move ${name} down`}
                         >

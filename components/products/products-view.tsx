@@ -3,10 +3,11 @@
 import { PackageOpen, Plus } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useCallback, useEffect, useMemo, useOptimistic, useState, useTransition } from "react"
+import { useCallback, useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react"
 import { toast } from "sonner"
 
 import { PageHeader } from "@/components/admin/page-header"
+import { Pagination } from "@/components/admin/pagination"
 import { SearchInput } from "@/components/admin/search-input"
 import { primaryOutline } from "@/components/admin/styles"
 import {
@@ -34,6 +35,7 @@ import { FilterMenu, GroupMenu, SortMenu, ViewToggle } from "./toolbar-menus"
 
 type View = "board" | "list"
 const VIEW_KEY = "wh-admin:products-view"
+const PAGE_SIZE = 20
 
 export function ProductsView({
   products,
@@ -111,6 +113,27 @@ export function ProductsView({
     () => buildColumns(visibleProducts, categories, groupBy),
     [visibleProducts, categories, groupBy]
   )
+
+  // List view pagination: back to page 1 whenever search, filters or sort change.
+  const [page, setPage] = useState(1)
+  const listKey = JSON.stringify([query, filters, sortBy])
+  const [pagedKey, setPagedKey] = useState(listKey)
+  if (pagedKey !== listKey) {
+    setPagedKey(listKey)
+    setPage(1)
+  }
+  const pageCount = Math.max(1, Math.ceil(visibleProducts.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount) // e.g. after deleting the last item on the last page
+  const offset = (currentPage - 1) * PAGE_SIZE
+  const pageProducts = visibleProducts.slice(offset, offset + PAGE_SIZE)
+  const listRef = useRef<HTMLDivElement>(null)
+
+  function goToPage(next: number) {
+    setPage(next)
+    // Start the new page at its top (the panel scrolls on desktop, the window on mobile).
+    listRef.current?.scrollTo({ top: 0 })
+    document.getElementById("main")?.scrollIntoView({ block: "start" })
+  }
 
   // Reordering changes the site-wide order, so only offer it on the full, ordered list.
   const canReorder = sortBy === "order" && !query && activeFilterCount(filters) === 0
@@ -198,11 +221,20 @@ export function ProductsView({
           </button>
         </div>
       ) : view === "board" ? (
-        <Board columns={columns} now={now} actions={actions} canReorder={canReorder} siteUrl={siteUrl} />
+        <Board
+          columns={columns}
+          pageSize={PAGE_SIZE}
+          now={now}
+          actions={actions}
+          canReorder={canReorder}
+          siteUrl={siteUrl}
+        />
       ) : (
-        <div className="flex-1 lg:min-h-0 lg:overflow-y-auto">
+        <div ref={listRef} className="flex-1 lg:min-h-0 lg:overflow-y-auto">
           <ProductList
-            products={visibleProducts}
+            products={pageProducts}
+            offset={offset}
+            total={visibleProducts.length}
             categoryTitles={categoryTitles}
             moveTargetsFor={moveTargetsFor}
             now={now}
@@ -210,6 +242,14 @@ export function ProductsView({
             canReorder={canReorder}
             siteUrl={siteUrl}
           />
+          <div className="px-4 pb-6 sm:px-7">
+            <Pagination
+              page={currentPage}
+              pageSize={PAGE_SIZE}
+              total={visibleProducts.length}
+              onChange={goToPage}
+            />
+          </div>
         </div>
       )}
 

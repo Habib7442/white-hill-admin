@@ -1,13 +1,12 @@
 "use server"
 
-import { refresh } from "next/cache"
-
 import { fail, ok, type ActionResult } from "@/lib/action-result"
+import { tags } from "@/lib/data"
 import { sanity } from "@/lib/sanity/client"
 import { fieldErrors } from "@/lib/validation/product"
 import { settingsSchema, settingsTextFields } from "@/lib/validation/settings"
 
-import { requireAdmin, sanityErrorMessage } from "./guard"
+import { invalidate, requireAdmin, sanityErrorMessage } from "./guard"
 
 // Fixed id of the singleton, as in whitehill-lifecare/sanity/structure.ts.
 const SETTINGS_ID = "siteSettings"
@@ -36,7 +35,7 @@ export async function saveSettings(input: unknown): Promise<ActionResult> {
       .patch(SETTINGS_ID, (p) => p.set(set).unset(unset))
       .delete(`drafts.${SETTINGS_ID}`)
       .commit()
-    refresh()
+    invalidate(tags.settings)
     return ok(undefined)
   } catch (error) {
     return fail(sanityErrorMessage(error))

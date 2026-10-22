@@ -2,7 +2,8 @@ import { PageBody, PageHeader } from "./page-header"
 
 const block = "animate-pulse rounded-xl bg-muted"
 
-export function BoardSkeleton({ title }: { title: string }) {
+/** Products page in List view (the default): toolbar + table rows. */
+export function TableSkeleton({ title }: { title: string }) {
   return (
     <>
       <PageHeader
@@ -10,15 +11,21 @@ export function BoardSkeleton({ title }: { title: string }) {
         actions={<div className={`${block} h-11 w-full sm:w-80`} />}
         toolbar={<div className={`${block} h-11 w-28`} />}
       />
-      <div className="flex gap-5 overflow-hidden px-4 pt-5 sm:px-7" aria-busy="true" aria-label="Loading">
-        {[0, 1, 2].map((column) => (
-          <div key={column} className="w-[min(19rem,82vw)] shrink-0 space-y-3">
-            <div className={`${block} h-7 w-2/3`} />
-            {[0, 1, 2].map((card) => (
-              <div key={card} className={`${block} h-40 rounded-card`} />
-            ))}
-          </div>
-        ))}
+      <div className="px-4 pt-5 sm:px-7" aria-busy="true" aria-label="Loading">
+        <div className="overflow-hidden rounded-card border border-card-border">
+          <div className="h-11 bg-muted/60" />
+          {[0, 1, 2, 3, 4, 5].map((row) => (
+            <div key={row} className="flex items-center gap-4 border-t border-hairline px-4 py-3">
+              <div className={`${block} size-9 shrink-0 rounded-md`} />
+              <div className="flex-1 space-y-2">
+                <div className={`${block} h-3.5 w-1/3`} />
+                <div className={`${block} h-3 w-1/2`} />
+              </div>
+              <div className={`${block} hidden h-3.5 w-24 md:block`} />
+              <div className={`${block} hidden h-5 w-9 rounded-full md:block`} />
+            </div>
+          ))}
+        </div>
       </div>
     </>
   )

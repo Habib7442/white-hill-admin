@@ -16,12 +16,15 @@ import type { ProductActions } from "./product-menu"
  */
 export function Board({
   columns,
+  pageSize,
   now,
   actions,
   canReorder,
   siteUrl,
 }: {
   columns: Column[]
+  /** Cards shown per column before "Show more". */
+  pageSize: number
   now: number
   actions: ProductActions
   canReorder: boolean
@@ -29,6 +32,7 @@ export function Board({
 }) {
   const [dragging, setDragging] = useState<{ id: string; from: string } | null>(null)
   const [over, setOver] = useState<string | null>(null)
+  const [shown, setShown] = useState<Record<string, number>>({})
 
   const productById = new Map(columns.flatMap((c) => c.products.map((p) => [p._id, p] as const)))
 
@@ -108,7 +112,7 @@ export function Board({
                 </div>
               ) : null}
 
-              {column.products.map((product) => (
+              {column.products.slice(0, shown[column.key] ?? pageSize).map((product) => (
                 <ProductCard
                   key={product._id}
                   product={product}
@@ -125,6 +129,22 @@ export function Board({
                   onDragEnd={endDrag}
                 />
               ))}
+
+              {column.products.length > (shown[column.key] ?? pageSize) ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShown((s) => ({ ...s, [column.key]: (s[column.key] ?? pageSize) + pageSize }))
+                  }
+                  className="flex h-11 shrink-0 items-center justify-center rounded-card border border-dashed border-card-border text-sm font-medium text-text-muted transition-colors hover:border-blue-100 hover:bg-blue-25 hover:text-text"
+                >
+                  Show {Math.min(pageSize, column.products.length - (shown[column.key] ?? pageSize))} more
+                  <span className="sr-only"> in {column.title}</span>
+                  <span className="ml-1 text-text-faint">
+                    ({column.products.length - (shown[column.key] ?? pageSize)} hidden)
+                  </span>
+                </button>
+              ) : null}
 
               {column.products.length === 0 && !droppable ? (
                 <div className="flex h-28 shrink-0 items-center justify-center rounded-card border-2 border-dashed border-card-border text-xl font-semibold text-text-faint">

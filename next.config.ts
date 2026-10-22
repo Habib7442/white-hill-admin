@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     // Pack images and leaflets are uploaded through Server Actions (max 4 MB
     // each, checked in lib/actions/assets.ts). Vercel caps bodies at 4.5 MB.
     serverActions: { bodySizeLimit: "4.5mb" },
+    // Reuse a visited admin page for 60 s when navigating back to it, instead
+    // of re-rendering behind a skeleton. Admin saves refresh it immediately.
+    staleTimes: { dynamic: 60 },
   },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],
